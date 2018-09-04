@@ -21,14 +21,19 @@ module.exports = {
 	},
 	module: {
 		rules: [{
-			test: /\.css$/,
-			use: [ 'style-loader', 'css-loader' ]
+			test: /(\.css$)|(\.scss$)/,
+			use: [ 'style-loader', 'css-loader', 'sass-loader' ]
 		},
 		{
 			test: /\.tsx?$/,
 			use: 'ts-loader',
 			exclude: /node_modules/
-		}]
+		},{
+      test: /\.(png|svg|jpg|gif)$/,
+      use: [
+        'file-loader'
+      ]
+    }]
 	},
 	resolve: {
 		extensions: [ '.tsx', '.ts', '.js' ]

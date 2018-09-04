@@ -5,8 +5,17 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 	<style>
 		.rightArrow {
-			background: blue;
+			/* background: blue; */
 			position: absolute;
+		}
+
+		.rightArrow::before {
+			content: '>>';
+			position: absolute;
+			left: 5px;
+			cursor: pointer;
+			transform: scale(.5, 2.1);
+			z-index: 2;
 		}
 
 	</style>
@@ -14,10 +23,9 @@
 <body>
 
 <div id="container" style="width:800px;height:600px;border:1px solid #ccc"></div>
-<div id="container1" style="width:800px;height:600px;border:1px solid #ccc"></div>
-<div id="container2" style="width:800px;height:600px;border:1px solid #ccc"></div>
 
 <script src="./app.bundle.js"></script>
+<script src="//at.alicdn.com/t/font_822930_133btg4uh7ec.js"></script>
 
 </body>
 </html>

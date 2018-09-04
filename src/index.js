@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor';
 import DecorationsParser from './DecorationsParser';
+import './index.scss';
 
 self.MonacoEnvironment = {
   getWorkerUrl: function (moduleId, label) {
@@ -57,9 +58,6 @@ const mouseDown = (e) => {
         if(target.position.lineNumber === element.originalStartLineNumber) {
           content = getOriginalContent(element);
           range = getModifiedRange(element);
-          console.log('content', content);
-          console.log('range', range);
-          // content = element.modifiedEndLineNumber === 0 ? content.concat('\n') : content;
           Operations = diffEditor.getModifiedEditor().getModel().pushEditOperations([], [{
             range: range,
             text: content
@@ -89,6 +87,9 @@ const getOriginalContent = (element) => {
     }
     modifiedLineCount ++;
   }
+  /**
+   * 向左边补充换行符
+   */
   if (element.modifiedEndLineNumber === 0 && (originalLineCount - element.originalEndLineNumber > 0 || element.modifiedStartLineNumber === 0)) {
     content = content.concat('\n');
   } 
@@ -152,3 +153,4 @@ Some more text
 aaa
 asd
 */
+
