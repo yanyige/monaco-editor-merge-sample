@@ -10,30 +10,39 @@ export default function (diffEditor: any) {
   let decorations: any;
   let changes: any;
 
+  //第一次生成就需要生成decorations
+  changes = diffEditor.getLineChanges();
+  let decoration = DecorationsParser.scanLineChanges(changes);
+  decorations = originalModel.deltaDecorations(decorations, decoration);
+
   diffEditor.onDidUpdateDiff(() => {
     changes = diffEditor.getLineChanges();
     let decoration = DecorationsParser.scanLineChanges(changes);
-    // console.log('decoration', decoration);
     decorations = originalModel.deltaDecorations(decorations, decoration);
   });
 
   let lineLength, range, content, Operations;
 
   const mouseDown = (e: any) => {
-    let target = e.target;
-    if (target.type === 2) {
-      if ((target.element && target.element.previousSibling && target.element.previousSibling.classList.contains('rightArrow')) || target.element.classList.contains('rightArrow')) {
-        changes.forEach((element: any) => {
-          if (target.position.lineNumber === element.originalStartLineNumber) {
-            content = getOriginalContent(element);
-            range = getModifiedRange(element);
-            Operations = modifiedModel.pushEditOperations([], [{
-              range: range,
-              text: content
-            }]);
-          }
-        });
+    // 这里在点击过快的时候需要收集错误信息
+    try {
+      let target = e.target;
+      if (target.type === 2) {
+        if ((target.element && target.element.previousSibling && target.element.previousSibling.classList.contains('rightArrow')) || target.element.classList.contains('rightArrow')) {
+          changes.forEach((element: any) => {
+            if (target.position.lineNumber === element.originalStartLineNumber) {
+              content = getOriginalContent(element);
+              range = getModifiedRange(element);
+              Operations = modifiedModel.pushEditOperations([], [{
+                range: range,
+                text: content
+              }]);
+            }
+          });
+        }
       }
+    } catch (error) {
+      
     }
   }
 

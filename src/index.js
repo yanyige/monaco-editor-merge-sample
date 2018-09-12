@@ -34,6 +34,8 @@ diffEditor.setModel({
 	modified: modifiedModel
 });
 
+window.a = diffEditor;
+
 merge(diffEditor);
 
 
