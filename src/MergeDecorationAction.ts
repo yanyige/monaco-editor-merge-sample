@@ -2,6 +2,7 @@ import DecorationsParser from './DecorationsParser';
 
 export default function (diffEditor: any, opt: any) {
 
+  if(!diffEditor) return;
   let { arrowPos = 'right' } = opt || {};
   console.log('arrowPos', arrowPos);
 
@@ -12,6 +13,11 @@ export default function (diffEditor: any, opt: any) {
   let changes: any;
 
   let decorationsModified: any;
+
+  //第一次生成就需要生成decorations
+  // changes = diffEditor.getLineChanges();
+  // let decoration = DecorationsParser.scanLineChanges(changes);
+  // decorations = originalModel.deltaDecorations(decorations, decoration);
 
   diffEditor.onDidUpdateDiff(() => {
     changes = diffEditor.getLineChanges();
@@ -27,30 +33,35 @@ export default function (diffEditor: any, opt: any) {
   let lineLength, range, content, Operations;
 
   const mouseDown = (e: any) => {
-    let target = e.target;
-    if (target.type === 2) {
-      if ((target.element && target.element.previousSibling && target.element.previousSibling.classList.contains('rightArrow')) || target.element.classList.contains('rightArrow')) {
-        changes.forEach((element: any) => {
-          if (   (element.originalStartLineNumber === 0 && target.position.lineNumber == 1)
-              || (element.modifiedStartLineNumber === 0 && target.position.lineNumber == 1)
-              || (target.position.lineNumber === element.originalStartLineNumber && arrowPos === 'left') 
-              || target.position.lineNumber === element.modifiedStartLineNumber && arrowPos === 'right'){
-            content = getOriginalContent(element);
-            console.log('ori content', content);
-            range = getModifiedRange(element);
-            Operations = modifiedModel.pushEditOperations([], [{
-              range: range,
-              text: content
-            }]);
-          }
-        });
+    // 这里在点击过快的时候需要收集错误信息
+    try {    
+      let target = e.target;
+      if (target.type === 2) {
+        if ((target.element && target.element.previousSibling && target.element.previousSibling.classList.contains('rightArrow')) || target.element.classList.contains('rightArrow')) {
+          changes.forEach((element: any) => {
+            if (   (element.originalStartLineNumber === 0 && target.position.lineNumber == 1)
+                || (element.modifiedStartLineNumber === 0 && target.position.lineNumber == 1)
+                || (target.position.lineNumber === element.originalStartLineNumber && arrowPos === 'left') 
+                || target.position.lineNumber === element.modifiedStartLineNumber && arrowPos === 'right'){
+              content = getOriginalContent(element);
+              console.log('ori content', content);
+              range = getModifiedRange(element);
+              Operations = modifiedModel.pushEditOperations([], [{
+                range: range,
+                text: content
+              }]);
+            }
+          });
+        }
       }
+    } catch (error) {
+      
     }
   }
 
   const getOriginalContent = (element: any) => {
     let originalEndLineNumber = element.originalEndLineNumber === 0 ? element.originalStartLineNumber : element.originalEndLineNumber;
-    lineLength = originalModel.getLineLength(originalEndLineNumber) + 1;
+    lineLength = originalModel.getLineContent(originalEndLineNumber).length + 1;
     range = new window.monaco.Range(element.originalStartLineNumber, 1, originalEndLineNumber, lineLength);
     content = originalModel.getValueInRange(range);
     // if (element.modifiedStartLineNumber === 0) {
@@ -90,7 +101,7 @@ export default function (diffEditor: any, opt: any) {
      * 表示original需要整体移动到右边并且要覆盖modified对应的行
      */
     if (element.originalEndLineNumber === 0 && element.modifiedEndLineNumber !== 0) {
-      lineLength = modifiedModel.getLineLength(element.modifiedEndLineNumber) + 1;
+      lineLength = modifiedModel.getLineContent(element.modifiedEndLineNumber).length + 1;
       return new window.monaco.Range(element.modifiedStartLineNumber - 1, 1, element.modifiedEndLineNumber, lineLength)
     }
     /**
@@ -100,7 +111,7 @@ export default function (diffEditor: any, opt: any) {
     else if (element.modifiedEndLineNumber === 0) {
       return new window.monaco.Range(element.modifiedStartLineNumber + 1, 1, element.modifiedStartLineNumber + 1, 1)
     } else {
-      lineLength = modifiedModel.getLineLength(element.modifiedEndLineNumber) + 1;
+      lineLength = modifiedModel.getLineContent(element.modifiedEndLineNumber).length + 1;
       range = new window.monaco.Range(element.modifiedStartLineNumber, 1, element.modifiedEndLineNumber, lineLength);
       return range;
     }
