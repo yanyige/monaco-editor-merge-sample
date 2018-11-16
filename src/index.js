@@ -34,7 +34,7 @@ diffEditor.setModel({
 	modified: modifiedModel
 });
 
-merge(diffEditor, {arrowPos: 'right'});
+merge(diffEditor, {arrowPos: 'left'});
 
 
 /*

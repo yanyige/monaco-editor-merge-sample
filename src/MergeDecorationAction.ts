@@ -4,7 +4,6 @@ export default function (diffEditor: any, opt: any) {
 
   if(!diffEditor) return;
   let { arrowPos = 'right' } = opt || {};
-  console.log('arrowPos', arrowPos);
 
   let originalModel = diffEditor.getModel().original;
   let modifiedModel = diffEditor.getModel().modified;
@@ -21,13 +20,12 @@ export default function (diffEditor: any, opt: any) {
 
   diffEditor.onDidUpdateDiff(() => {
     changes = diffEditor.getLineChanges();
-    console.log('changes', changes);
     let decoration = DecorationsParser.scanLineChanges(changes);
     // console.log('decoration', decoration);
     let decorationModified = DecorationsParser.scanLineChangesModified(changes);
 
-    decorations = originalModel.deltaDecorations(decorations, decoration);
-    decorationsModified = modifiedModel.deltaDecorations(decorationsModified, decorationModified);
+    arrowPos === 'left' && (decorations = originalModel.deltaDecorations(decorations, decoration));
+    arrowPos === 'right' && (decorationsModified = modifiedModel.deltaDecorations(decorationsModified, decorationModified));
   });
 
   let lineLength, range, content, Operations;
@@ -55,12 +53,13 @@ export default function (diffEditor: any, opt: any) {
         }
       }
     } catch (error) {
-      
+      console.log('error', error);
     }
   }
 
   const getOriginalContent = (element: any) => {
     let originalEndLineNumber = element.originalEndLineNumber === 0 ? element.originalStartLineNumber : element.originalEndLineNumber;
+    if (!originalEndLineNumber) originalEndLineNumber = 1;
     lineLength = originalModel.getLineContent(originalEndLineNumber).length + 1;
     range = new window.monaco.Range(element.originalStartLineNumber, 1, originalEndLineNumber, lineLength);
     content = originalModel.getValueInRange(range);
@@ -83,7 +82,7 @@ export default function (diffEditor: any, opt: any) {
      * 2018.11.07更新
      * 添加到末尾只需要添加一行
      */
-    if(element.originalStartLineNumber - modifiedLineCount > 0) {
+    if(element.originalStartLineNumber - modifiedLineCount > 0 && element.modifiedEndLineNumber === 0) {
       content = '\n'.concat(content);
     }
     /**
